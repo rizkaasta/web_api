@@ -79,7 +79,7 @@ func UpdateDataMatkul(c *gin.Context) {
 
 	//cek data
 	var matkul models.MataKuliah
-	if err := db2.Where("kode = ?", c.Param("kode")).First(&matkul).Error; err != nil {
+	if err := db2.Where("kode_mata_kuliah = ?", c.Param("kode")).First(&matkul).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"Error": "Mata kuliah tidak di temukan",
 		})
@@ -90,16 +90,8 @@ func UpdateDataMatkul(c *gin.Context) {
 	var dataInput MataKuliahInput
 	if err := c.ShouldBindJSON(&dataInput);
 	err != nil {
-		errorMessages := []string{}
-		for _, e := range err.(validator.ValidationErrors) {
-			switch e.Tag() {
-			case "min":
-				errorMessage := fmt.Sprintf("Error %s, message: nama harus terdiri dari 6 karakter atau lebih", e.Field())
-				errorMessages = append(errorMessages, errorMessage)
-			}
-		}
 		c.JSON(http.StatusBadRequest, gin.H{
-			"errors": errorMessages,
+			"error" : err.Error(),
 		})
 		return
 	}
@@ -121,7 +113,8 @@ func DeleteDataMatkul(c *gin.Context) {
 
 	//cek data
 	var matkul models.MataKuliah
-	if err := db2.Where("kode = ?", c.Query("kode")).First(&matkul).Error; err != nil {
+	if err := db2.Where("kode_mata_kuliah = ?", c.Query("kode")).First(&matkul).Error;
+	err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"Error": "Mata kuliah tidak di temukan",
 		})
@@ -134,5 +127,6 @@ func DeleteDataMatkul(c *gin.Context) {
 	//menampilkan hasil
 	c.JSON(http.StatusOK, gin.H{
 		"Data": true,
+		"Message" : "Data berhasil dihapus",
 	})
 }

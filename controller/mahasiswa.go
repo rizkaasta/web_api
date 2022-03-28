@@ -97,19 +97,8 @@ func UpdateDataMhs(c *gin.Context) {
 	var dataInput MahasiswaInput
 	if err := c.ShouldBindJSON(&dataInput);
 	err != nil {
-		errorMessages := []string{}
-		for _, e := range err.(validator.ValidationErrors) {
-			switch e.Tag() {
-			case "min":
-				errorMessage := fmt.Sprintf("Error %s, message: nama harus terdiri dari 6 karakter atau lebih", e.Field())
-				errorMessages = append(errorMessages, errorMessage)
-			case "gt":
-				errorMessage := fmt.Sprintf("Error %s, message: nim harus terdiri dari 6 angka atau lebih", e.Field())
-				errorMessages = append(errorMessages, errorMessage)
-			}
-		}
 		c.JSON(http.StatusBadRequest, gin.H{
-			"errors" : errorMessages,
+			"error" : err.Error(),
 		})
 		return
 	}
@@ -145,5 +134,6 @@ func DeleteDataMhs(c *gin.Context) {
 	//menampilkan hasil
 	c.JSON(http.StatusOK, gin.H{
 		"Data" : true,
+		"Message" : "Data berhasil dihapus",
 	})
 }
