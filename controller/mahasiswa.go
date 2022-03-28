@@ -1,22 +1,23 @@
 package controller
 
 import (
-	"net/http"
-	"github.com/rizkaasta/web_api/models"
-	"time"
-	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
-	"github.com/go-playground/validator/v10"
 	"fmt"
+	"net/http"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
+	"github.com/jinzhu/gorm"
+	"github.com/rizkaasta/web_api/models"
 )
 
 type MahasiswaInput struct {
-	ID				int		`json:"id" binding:"required"`
-	Nama 			string	`json:"nama" binding:"required,min=6"`
-	Prodi 			string	`json:"prodi" binding:"required"`
-	Fakultas 		string	`json:"fakultas" binding:"required"`
-	NIM 			int		`json:"nim" binding:"required,gt=9999"`
-	TahunAngkatan 	int		`json:"tahun" binding:"required"`
+	ID            int    `json:"id" binding:"required"`
+	Nama          string `json:"nama" binding:"required,min=6"`
+	Prodi         string `json:"prodi" binding:"required"`
+	Fakultas      string `json:"fakultas" binding:"required"`
+	NIM           int    `json:"nim" binding:"required,gt=99999"`
+	TahunAngkatan int    `json:"tahun" binding:"required"`
 }
 
 //Create Data
@@ -25,8 +26,7 @@ func CreateDataMhs(c *gin.Context) {
 
 	//validasi inputan
 	var dataInput MahasiswaInput
-	if err := c.ShouldBindJSON(&dataInput);
-	err != nil {
+	if err := c.ShouldBindJSON(&dataInput); err != nil {
 		errorMessages := []string{}
 		for _, e := range err.(validator.ValidationErrors) {
 			switch e.Tag() {
@@ -42,39 +42,39 @@ func CreateDataMhs(c *gin.Context) {
 			}
 		}
 		c.JSON(http.StatusBadRequest, gin.H{
-			"errors" : errorMessages,
+			"errors": errorMessages,
 		})
 		return
 	}
 
 	// input data
 	mhs := models.Mahasiswa{
-		ID				: dataInput.ID,			
-		Nama 			: dataInput.Nama,
-		Prodi 			: dataInput.Prodi,
-		Fakultas 		: dataInput.Fakultas,
-		NIM 			: dataInput.NIM,
-		TahunAngkatan	: dataInput.TahunAngkatan,
+		ID:            dataInput.ID,
+		Nama:          dataInput.Nama,
+		Prodi:         dataInput.Prodi,
+		Fakultas:      dataInput.Fakultas,
+		NIM:           dataInput.NIM,
+		TahunAngkatan: dataInput.TahunAngkatan,
 	}
 	db1.Create(&mhs)
 
 	//menampilkan hasil
 	c.JSON(http.StatusOK, gin.H{
-		"Message" : "Input data berhasil",
-		"Data" : mhs,
-		"Time" : time.Now(),
+		"Message": "Input data berhasil",
+		"Data":    mhs,
+		"Time":    time.Now(),
 	})
 }
 
 //Read Data
 func ReadDataMhs(c *gin.Context) {
 	db1 := c.MustGet("db1").(*gorm.DB)
-	
+
 	var mhs []models.Mahasiswa
 	db1.Find(&mhs)
 	c.JSON(http.StatusOK, gin.H{
-		"Data" : mhs,
-		"Time" : time.Now(),
+		"Data": mhs,
+		"Time": time.Now(),
 	})
 
 }
@@ -85,20 +85,18 @@ func UpdateDataMhs(c *gin.Context) {
 
 	//cek data
 	var mhs models.Mahasiswa
-	if err := db1.Where("nim = ?", c.Param("nim")).First(&mhs).Error;
-	err != nil {
+	if err := db1.Where("nim = ?", c.Param("nim")).First(&mhs).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"Error" : "Data mahasiswa tidak di temukan",
+			"Error": "Data mahasiswa tidak di temukan",
 		})
 		return
 	}
 
 	//validasi inputan
 	var dataInput MahasiswaInput
-	if err := c.ShouldBindJSON(&dataInput);
-	err != nil {
+	if err := c.ShouldBindJSON(&dataInput); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error" : err.Error(),
+			"error": err.Error(),
 		})
 		return
 	}
@@ -108,9 +106,9 @@ func UpdateDataMhs(c *gin.Context) {
 
 	//menampilkan data
 	c.JSON(http.StatusOK, gin.H{
-		"Message" : "Data berhasil diubah",
-		"Data" : mhs,
-		"Time" : time.Now(),
+		"Message": "Data berhasil diubah",
+		"Data":    mhs,
+		"Time":    time.Now(),
 	})
 }
 
@@ -120,10 +118,9 @@ func DeleteDataMhs(c *gin.Context) {
 
 	//cek data
 	var mhs models.Mahasiswa
-	if err := db1.Where("nim = ?", c.Query("nim")).First(&mhs).Error;
-	err != nil {
+	if err := db1.Where("nim = ?", c.Query("nim")).First(&mhs).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"Error" : "Data mahasiswa tidak di temukan",
+			"Error": "Data mahasiswa tidak di temukan",
 		})
 		return
 	}
@@ -133,7 +130,7 @@ func DeleteDataMhs(c *gin.Context) {
 
 	//menampilkan hasil
 	c.JSON(http.StatusOK, gin.H{
-		"Data" : true,
-		"Message" : "Data berhasil dihapus",
+		"Data":    true,
+		"Message": "Data berhasil dihapus",
 	})
 }
