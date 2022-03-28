@@ -6,15 +6,17 @@ import (
 	"time"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
+	"github.com/go-playground/validator/v10"
+	"fmt"
 )
 
 type MahasiswaInput struct {
-	ID				int		`json:"id"`
-	Nama 			string	`json:"nama"`
-	Prodi 			string	`json:"prodi"`
-	Fakultas 		string	`json:"fakultas"`
-	NIM 			int		`json:"nim"`
-	TahunAngkatan 	int		`json:"tahun"`
+	ID				int		`json:"id" binding:"required"`
+	Nama 			string	`json:"nama" binding:"required,min=6"`
+	Prodi 			string	`json:"prodi" binding:"required"`
+	Fakultas 		string	`json:"fakultas" binding:"required"`
+	NIM 			int		`json:"nim" binding:"required,gt=9999"`
+	TahunAngkatan 	int		`json:"tahun" binding:"required"`
 }
 
 //Create Data
@@ -23,29 +25,24 @@ func CreateDataMhs(c *gin.Context) {
 
 	//validasi inputan
 	var dataInput MahasiswaInput
-	// if err := c.ShouldBindJSON(&dataInput.Nama);
-	// err != nil {
-	// 	c.JSON(http.StatusBadRequest, gin.H{
-	// 		"Error" : "Nama harus lebih dari 5 karakter",
-	// 	})
-	// 	return
-	// } else if err := c.ShouldBindJSON(&dataInput.NIM);
-	// err != nil {
-	// 	c.JSON(http.StatusBadRequest, gin.H{
-	// 		"Error" : "NIM harus angka dan lebih dari 5 angka",
-	// 	})
-	// 	return
-	// } else if err := c.ShouldBindJSON(&dataInput.TahunAngkatan);
-	// err != nil {
-	// 	c.JSON(http.StatusBadRequest, gin.H{
-	// 		"Error" : "Tahun angkatan harus berupa angka",
-	// 	})
-	// 	return
-	// } else 
 	if err := c.ShouldBindJSON(&dataInput);
 	err != nil {
+		errorMessages := []string{}
+		for _, e := range err.(validator.ValidationErrors) {
+			switch e.Tag() {
+			case "required":
+				errorMessage := fmt.Sprintf("Error %s, message: %s", e.Field(), e.ActualTag())
+				errorMessages = append(errorMessages, errorMessage)
+			case "min":
+				errorMessage := fmt.Sprintf("Error %s, message: nama harus terdiri dari 6 karakter atau lebih", e.Field())
+				errorMessages = append(errorMessages, errorMessage)
+			case "gt":
+				errorMessage := fmt.Sprintf("Error %s, message: nim harus terdiri dari 6 angka atau lebih", e.Field())
+				errorMessages = append(errorMessages, errorMessage)
+			}
+		}
 		c.JSON(http.StatusBadRequest, gin.H{
-			"Error" : "Data required",
+			"errors" : errorMessages,
 		})
 		return
 	}
@@ -100,8 +97,19 @@ func UpdateDataMhs(c *gin.Context) {
 	var dataInput MahasiswaInput
 	if err := c.ShouldBindJSON(&dataInput);
 	err != nil {
+		errorMessages := []string{}
+		for _, e := range err.(validator.ValidationErrors) {
+			switch e.Tag() {
+			case "min":
+				errorMessage := fmt.Sprintf("Error %s, message: nama harus terdiri dari 6 karakter atau lebih", e.Field())
+				errorMessages = append(errorMessages, errorMessage)
+			case "gt":
+				errorMessage := fmt.Sprintf("Error %s, message: nim harus terdiri dari 6 angka atau lebih", e.Field())
+				errorMessages = append(errorMessages, errorMessage)
+			}
+		}
 		c.JSON(http.StatusBadRequest, gin.H{
-			"Error" : err.Error(),
+			"errors" : errorMessages,
 		})
 		return
 	}
